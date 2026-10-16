@@ -43,6 +43,7 @@ export type {
   SandboxRuntimeFiles,
   SandboxRuntimeProcess,
   SandboxRuntimePorts,
+  Status,
   SandboxRuntimePreview,
   SandboxRuntime,
   Snapshot,
@@ -612,6 +613,13 @@ export const fromSandboxRuntime = <Raw = unknown>(
         input.snapshots.restore(id)
       ),
   },
+  status: () =>
+    guarded(input, "status", "status", () => {
+      if (input.status === undefined) {
+        return missingRuntime(input.provider, "status");
+      }
+      return input.status();
+    }),
   stop: input.stop,
 });
 

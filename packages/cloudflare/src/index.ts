@@ -148,6 +148,7 @@ const capabilities = (backups: boolean): Capabilities => ({
   snapshotCreate: backups ? "filesystem" : false,
   snapshotDelete: false,
   snapshotRestore: backups ? "filesystem" : false,
+  status: true,
   streaming: "separate",
 });
 
@@ -282,6 +283,12 @@ const wrap = async <Value>(
     throw sandboxError(provider, `${feature} failed`, "provider", error);
   }
 };
+
+const isReset = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  "durableObjectReset" in error &&
+  error.durableObjectReset === true;
 
 const providerCode = (error: unknown): string | undefined => {
   if (typeof error !== "object" || error === null || !("code" in error)) {
@@ -786,8 +793,25 @@ const createSandbox = <ProviderRaw extends CloudflareRaw>(
         }
       },
     },
+    status: () =>
+      wrap(async () => {
+        const { status } = await raw.getState();
+        if (status === "running" || status === "healthy") {
+          return "running";
+        }
+        return status === "stopping" ? "stopping" : "stopped";
+      }, "status"),
     stop: async () => {
-      await wrap(() => raw.destroy(), "stop");
+      try {
+        await raw.destroy();
+      } catch (error) {
+        // destroy() ends by destroying the container, which resets this Durable Object
+        // while the call is still waiting on it, so the reset means the stop completed
+        if (isReset(error)) {
+          return;
+        }
+        throw sandboxError(provider, "stop failed", "provider", error);
+      }
     },
   };
 };

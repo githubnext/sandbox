@@ -657,6 +657,7 @@ const createSandbox = (
     },
     restore: () => rejectUnsupported("in-place snapshot restore"),
   },
+  status: () => rejectUnsupported("status"),
   stop: async () => {
     if (stop === "detach") {
       raw.detach();

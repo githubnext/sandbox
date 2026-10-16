@@ -233,6 +233,14 @@ type Authentication = Readonly<{
 
 const provider = "vercel";
 
+const rejectUnsupported = (feature: string): Promise<never> => {
+  try {
+    unsupported(provider, feature);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
 const secrets = ["VERCEL_OIDC_TOKEN", "VERCEL_TOKEN"] as const;
 
 const maximumPorts = 4;
@@ -1024,6 +1032,7 @@ const createSandbox = (
         }, "snapshot restore");
       },
     },
+    status: () => rejectUnsupported("status"),
     stop: async () => {
       await wrap(() => stopActive(raw), "stop");
     },

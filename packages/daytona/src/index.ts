@@ -815,6 +815,7 @@ const createSandbox = (
     },
     restore: () => rejectUnsupported("stable snapshot restore"),
   },
+  status: () => rejectUnsupported("status"),
   stop: async () => {
     if (options.deleteOnStop) {
       await wrap(() => raw.delete(seconds(options.timeout)), "stop");

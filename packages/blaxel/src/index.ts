@@ -740,6 +740,7 @@ const createSandbox = (raw: Raw, cwd: string): Sandbox<Raw> => ({
     delete: () => rejectUnsupported(provider, "normalized snapshot deletion"),
     restore: () => rejectUnsupported(provider, "in-place snapshot restore"),
   },
+  status: () => rejectUnsupported(provider, "status"),
   stop: async () => {
     await wrap(() => raw.delete(), "stop");
   },
