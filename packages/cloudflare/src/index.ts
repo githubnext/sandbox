@@ -846,7 +846,11 @@ export const cloudflare = <ProviderRaw extends CloudflareRaw = CloudflareRaw>(
       if (Object.keys(env).length > 0) {
         await raw.setEnvVars(env);
       }
-      await raw.mkdir(cwd, { recursive: true });
+      // The image ships /workspace, so connecting with the default cwd leaves the container
+      // untouched and status() can read it without starting it.
+      if (cwd !== "/workspace") {
+        await raw.mkdir(cwd, { recursive: true });
+      }
 
       return createSandbox<ProviderRaw>(raw, cwd, { ...options, id }, support);
     },
